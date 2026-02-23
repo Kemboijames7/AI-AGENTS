@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents — Explored</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f4f0e8;
+    --accent: #c8420a;
+    --accent2: #1a6b4a;
+    --muted: #7a7265;
+    --border: #d4cfc5;
+    --card: #fff;
+    --code-bg: #1a1a1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ─── HERO ─────────────────────────────────────── */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 80px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: 'AGENT';
+    font-family: 'Playfair Display', serif;
+    font-size: 18vw;
+    font-weight: 900;
+    color: rgba(255,255,255,0.04);
+    position: absolute;
+    top: -20px; right: -20px;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 7vw, 80px);
+    font-weight: 900;
+    line-height: 1.05;
+    max-width: 700px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 13px;
+    color: rgba(244,240,232,0.6);
+    max-width: 500px;
+  }
+
+  /* ─── NAV STEPS ─────────────────────────────────── */
+  .steps-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .step-tab {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: all .2s;
+    background: transparent;
+    border-top: none;
+    border-left: none;
+    border-bottom: none;
+    color: var(--muted);
+    font-family: inherit;
+  }
+  .step-tab:last-child { border-right: none; }
+  .step-tab.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .step-tab:hover:not(.active) { background: var(--border); color: var(--ink); }
+
+  /* ─── SECTIONS ──────────────────────────────────── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ─── MEANING ──────────────────────────────────── */
+  .meaning-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-heading span { color: var(--accent); }
+  .divider {
+    width: 60px; height: 3px;
+    background: var(--accent);
+    margin: 20px 0 36px;
+  }
+  .definition-card {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 0;
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .definition-card::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    color: var(--accent);
+    position: absolute;
+    top: -20px; left: 20px;
+    line-height: 1;
+  }
+  .definition-card p {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-style: italic;
+    padding-top: 30px;
+    line-height: 1.6;
+  }
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  .pillar {
+    background: var(--paper);
+    padding: 28px 24px;
+  }
+  .pillar-icon { font-size: 28px; margin-bottom: 12px; }
+  .pillar-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .pillar p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  .loop-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    padding: 40px 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .loop-step {
+    text-align: center;
+    padding: 16px 20px;
+  }
+  .loop-step-icon {
+    width: 56px; height: 56px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 10px;
+  }
+  .loop-step-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .loop-arrow {
+    font-size: 22px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  /* ─── ANALOGY ──────────────────────────────────── */
+  .analogy-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .analogy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  @media(max-width:600px){ .analogy-grid { grid-template-columns: 1fr; } }
+  .analogy-cell {
+    background: var(--paper);
+    padding: 32px 28px;
+  }
+  .analogy-cell.highlight { background: var(--ink); color: var(--paper); }
+  .analogy-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .analogy-cell.highlight .analogy-tag { color: #f08060; }
+  .analogy-cell h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .analogy-cell p { font-size: 12px; line-height: 1.8; color: var(--muted); }
+  .analogy-cell.highlight p { color: rgba(244,240,232,0.7); }
+
+  .story-block {
+    background: var(--accent2);
+    color: var(--paper);
+    padding: 36px 40px;
+    position: relative;
+    margin-bottom: 40px;
+  }
+  .story-block h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .story-block p { font-size: 13px; line-height: 1.9; opacity: 0.9; }
+  .story-step {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    align-items: flex-start;
+  }
+  .story-num {
+    background: var(--paper);
+    color: var(--accent2);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ─── DEMO ──────────────────────────────────────── */
+  .demo-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .demo-intro {
+    margin-bottom: 40px;
+  }
+  .demo-intro p { font-size: 13px; color: var(--muted); margin-top: 12px; }
+
+  .demo-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 24px;
+  }
+  @media(max-width:700px){ .demo-container { grid-template-columns: 1fr; } }
+
+  .demo-panel {
+    background: var(--paper);
+    padding: 28px;
+  }
+  .demo-panel-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  /* Task input */
+  .task-input-area {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    resize: none;
+    height: 80px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .task-input-area:focus { border-color: var(--ink); }
+
+  .preset-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .preset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all .15s;
+  }
+  .preset-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--border); }
+
+  .run-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .run-btn:hover { background: #a33308; }
+  .run-btn:disabled { background: var(--muted); cursor: not-allowed; }
+
+  /* Agent trace */
+  .agent-trace {
+    background: var(--code-bg);
+    color: #e8e4dc;
+    min-height: 340px;
+    padding: 20px;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-y: auto;
+    position: relative;
+  }
+  .trace-empty {
+    color: rgba(255,255,255,0.2);
+    font-style: italic;
+    text-align: center;
+    padding-top: 60px;
+  }
+
+  .trace-step { opacity: 0; transform: translateY(4px); transition: all .3s; }
+  .trace-step.show { opacity: 1; transform: translateY(0); }
+
+  .t-goal { color: #7dcfb6; }
+  .t-think { color: #ffda79; }
+  .t-act { color: #f08060; }
+  .t-observe { color: #90b8f8; }
+  .t-result { color: #b5e48c; }
+  .t-label {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-right: 8px;
+    font-weight: 600;
+  }
+  .t-goal .t-label { background: #7dcfb620; color: #7dcfb6; }
+  .t-think .t-label { background: #ffda7920; color: #ffda79; }
+  .t-act .t-label { background: #f0806020; color: #f08060; }
+  .t-observe .t-label { background: #90b8f820; color: #90b8f8; }
+  .t-result .t-label { background: #b5e48c20; color: #b5e48c; }
+
+  .agent-loop-vis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 2px;
+  }
+  .loop-vis-step {
+    background: var(--paper);
+    padding: 10px;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: all .3s;
+  }
+  .loop-vis-step.active-step {
+    background: var(--accent);
+    color: white;
+  }
+  .loop-vis-step.done-step {
+    background: var(--accent2);
+    color: white;
+  }
+
+  .tools-used {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+  .tools-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .tool-chip {
+    display: inline-block;
+    background: var(--border);
+    padding: 3px 10px;
+    margin: 2px;
+    font-size: 10px;
+    border-radius: 20px;
+    color: var(--ink);
+    transition: all .3s;
+  }
+  .tool-chip.used { background: var(--accent2); color: white; }
+
+  /* ─── FOOTER ─────────────────────────────────────── */
+  footer {
+    background: var(--ink);
+    color: rgba(244,240,232,0.4);
+    text-align: center;
+    padding: 30px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">// A Complete Exploration</div>
+  <h1>Understanding<br><em>AI Agents</em><br>from first principles</h1>
+  <p class="hero-sub">Meaning → Analogy → Live Demo. Everything you need to truly grasp what an AI Agent is and how it works.</p>
+</div>
+
+<!-- STEP NAV -->
+<nav class="steps-nav">
+  <button class="step-tab active" onclick="showSection('meaning', this)">01 — Meaning</button>
+  <button class="step-tab" onclick="showSection('analogy', this)">02 — Analogy</button>
+  <button class="step-tab" onclick="showSection('demo', this)">03 — Live Demo</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 1: MEANING -->
+<!-- ══════════════════════════════════════════════════ -->
+<section class="section active" id="meaning">
+  <div class="meaning-wrap">
+    <div class="section-heading">What <span>Is</span> an<br>AI Agent?</div>
+    <div class="divider"></div>
+
+    <div class="definition-card">
+      <p>An AI Agent is a system that perceives its environment, reasons about it, decides on actions, and executes those actions — autonomously, repeatedly, until a goal is achieved.</p>
+    </div>
+
+    <p style="font-size:13px; color:var(--muted); margin-bottom:36px;">
+      Unlike a standard AI model (which takes one input and gives one output), an agent is a <em>loop</em>. It keeps thinking and acting until it's done. It can use tools, remember context, and adapt when things go wrong.
+    </p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-icon">👁️</div>
+        <div class="pillar-title">Perceive</div>
+        <p>Takes in information — text, data, search results, tool outputs — as its current "view of the world."</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🧠</div>
+        <div class="pillar-title">Reason</div>
+        <p>Uses an LLM (or other AI) to think: What do I know? What do I need? What should I do next?</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🔧</div>
+        <div class="pillar-title">Act</div>
+        <p>Calls tools — web search, APIs, code execution, file systems — to do real work in the world.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🔁</div>
+        <div class="pillar-title">Loop</div>
+        <p>Observes the result of each action and loops back to reason again. Repeats until the goal is met.</p>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);">The Agent Loop</div>
+    <div class="loop-diagram">
+      <div class="loop-step">
+        <div class="loop-step-icon">🎯</div>
+        <div class="loop-step-label">Goal</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="loop-step-icon">🧠</div>
+        <div class="loop-step-label">Think</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="loop-step-icon">⚡</div>
+        <div class="loop-step-label">Act</div>
+      </div>
+      <div class="loop-arrow">→</div>
+      <div class="loop-step">
+        <div class="loop-step-icon">👁️</div>
+        <div class="loop-step-label">Observe</div>
+      </div>
+      <div class="loop-arrow">↩</div>
+    </div>
+
+    <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:12px;">Loop continues until goal is satisfied or max steps reached</p>
+
+    <div style="margin-top:48px; padding:24px; border:1px solid var(--border); background:var(--card);">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">Key difference from regular AI</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <tr>
+          <th style="text-align:left;padding:8px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:normal;">Attribute</th>
+          <th style="text-align:left;padding:8px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:normal;">Regular AI (ChatGPT-style)</th>
+          <th style="text-align:left;padding:8px;border-bottom:1px solid var(--border);color:var(--accent);font-weight:normal;">AI Agent</th>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Control</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);color:var(--muted);">Single turn</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Multi-step loop</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Tools</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);color:var(--muted);">Optional / limited</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Core feature</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Memory</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);color:var(--muted);">Context window only</td>
+          <td style="padding:8px;border-bottom:1px solid var(--border);">Short + long term</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;">Autonomy</td>
+          <td style="padding:8px;color:var(--muted);">Human must drive</td>
+          <td style="padding:8px;">Self-directed</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="margin-top:32px; text-align:center;">
+      <button class="run-btn" style="max-width:300px;" onclick="document.querySelector('[onclick*=analogy]').click()">Next: See the Analogy →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 2: ANALOGY -->
+<!-- ══════════════════════════════════════════════════ -->
+<section class="section" id="analogy">
+  <div class="analogy-wrap">
+    <div class="section-heading">The <span>Best</span><br>Analogy</div>
+    <div class="divider"></div>
+
+    <p style="font-size:13px; color:var(--muted); margin-bottom:36px;">An AI Agent is like a <strong style="color:var(--ink)">highly skilled personal assistant</strong> — one who doesn't just answer questions, but actually goes out and gets things done.</p>
+
+    <div class="analogy-grid">
+      <div class="analogy-cell highlight">
+        <span class="analogy-tag">You (the Boss)</span>
+        <h3>The Goal</h3>
+        <p>"Book me a flight to Lagos next Friday, cheapest option, aisle seat, and send the itinerary to my email."</p>
+      </div>
+      <div class="analogy-cell">
+        <span class="analogy-tag">The AI Agent (the Assistant)</span>
+        <h3>The Plan</h3>
+        <p>I'll need to: search flights, compare prices, check seat availability, book, then send an email. Let me start.</p>
+      </div>
+      <div class="analogy-cell">
+        <span class="analogy-tag">Step 1 — Act</span>
+        <h3>Searches Flights</h3>
+        <p>Calls flight search tool. Gets back 12 results. Observes: cheapest is Kenya Airways at 7:20am.</p>
+      </div>
+      <div class="analogy-cell">
+        <span class="analogy-tag">Step 2 — Reason</span>
+        <h3>Thinks & Adapts</h3>
+        <p>Cheapest found. Now check aisle seat. Tool says aisle is available on row 14. Good — proceed to book.</p>
+      </div>
+      <div class="analogy-cell">
+        <span class="analogy-tag">Step 3 — Act</span>
+        <h3>Books the Ticket</h3>
+        <p>Calls booking API. Booking confirmed. Gets confirmation number. Observes: success. Next sub-goal: send email.</p>
+      </div>
+      <div class="analogy-cell highlight">
+        <span class="analogy-tag">Step 4 — Done</span>
+        <h3>Sends Email</h3>
+        <p>Composes itinerary, calls email tool, sends. Returns to you: "Done! Flight booked, confirmation in your inbox."</p>
+      </div>
+    </div>
+
+    <div class="story-block">
+      <h3>🏗️ The Contractor Analogy</h3>
+      <p>Think of it another way. You hire a <strong>contractor</strong> to renovate your kitchen. You don't tell them every nail to hammer. You say: "New kitchen, modern style, $15k budget." They:</p>
+      <div class="story-step">
+        <div class="story-num">1</div>
+        <p>Break the goal into sub-tasks (demo, plumbing, cabinets, painting)</p>
+      </div>
+      <div class="story-step">
+        <div class="story-num">2</div>
+        <p>Use tools — power drill, saw, level, phone to call subcontractors</p>
+      </div>
+      <div class="story-step">
+        <div class="story-num">3</div>
+        <p>Observe problems (pipe burst!) and adapt the plan in real time</p>
+      </div>
+      <div class="story-step">
+        <div class="story-num">4</div>
+        <p>Come back to you only when truly done — or when they genuinely need your decision</p>
+      </div>
+      <p style="margin-top:16px;"><strong>That's an AI Agent.</strong> You give the goal. It handles the loop.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:var(--ink);border:1px solid var(--ink);margin-bottom:40px;">
+      <div style="background:var(--paper);padding:24px;">
+        <div style="font-size:24px;margin-bottom:8px;">🤖</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">ReAct Pattern</div>
+        <p style="font-size:11px;color:var(--muted);">The most common agent pattern. <strong>Re</strong>ason then <strong>Act</strong>. Think step by step, pick a tool, observe, repeat.</p>
+      </div>
+      <div style="background:var(--paper);padding:24px;">
+        <div style="font-size:24px;margin-bottom:8px;">🗂️</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Plan & Execute</div>
+        <p style="font-size:11px;color:var(--muted);">Agent first creates a full multi-step plan, then executes each step methodically, updating as needed.</p>
+      </div>
+      <div style="background:var(--paper);padding:24px;">
+        <div style="font-size:24px;margin-bottom:8px;">🌐</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Multi-Agent</div>
+        <p style="font-size:11px;color:var(--muted);">Multiple specialized agents collaborate — one researches, one writes, one reviews. Like a team, not a solo worker.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; text-align:center;">
+      <button class="run-btn" style="max-width:300px;" onclick="document.querySelector('[onclick*=demo]').click()">Next: Live Demo →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 3: DEMO -->
+<!-- ══════════════════════════════════════════════════ -->
+<section class="section" id="demo">
+  <div class="demo-wrap">
+    <div class="demo-intro">
+      <div class="section-heading">Live <span>Demo</span><br>Simulation</div>
+      <div class="divider"></div>
+      <p>Watch a simulated AI Agent work through a task in real time. See its internal Thought → Action → Observation cycle as it unfolds, step by step.</p>
+    </div>
+
+    <!-- Loop Visualizer -->
+    <div class="agent-loop-vis" style="margin-bottom:2px;">
+      <div class="loop-vis-step" id="vis-think">🧠 Think</div>
+      <div class="loop-vis-step" id="vis-act">⚡ Act</div>
+      <div class="loop-vis-step" id="vis-observe">👁️ Observe</div>
+      <div class="loop-vis-step" id="vis-done">✅ Done</div>
+    </div>
+
+    <div class="agent-loop-vis" style="margin-bottom:24px;">
+      <div class="tools-used" style="grid-column:1/-1;background:var(--paper);border:none;border-top:1px solid var(--border);padding:14px 20px;">
+        <div class="tools-label">Available Tools</div>
+        <span class="tool-chip" id="tool-search">🔍 web_search</span>
+        <span class="tool-chip" id="tool-calc">🔢 calculator</span>
+        <span class="tool-chip" id="tool-code">💻 run_code</span>
+        <span class="tool-chip" id="tool-email">📧 send_email</span>
+        <span class="tool-chip" id="tool-file">📁 read_file</span>
+      </div>
+    </div>
+
+    <div class="demo-container">
+      <!-- INPUT PANEL -->
+      <div class="demo-panel">
+        <div class="demo-panel-title">// Task Input</div>
+
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Try a preset:</div>
+        <div class="preset-btns">
+          <button class="preset-btn" onclick="setTask('Research the top 3 AI companies in Africa and summarize their main products')">🌍 AI in Africa</button>
+          <button class="preset-btn" onclick="setTask('Calculate compound interest on $5000 at 8% for 10 years and write a report')">📈 Finance Calc</button>
+          <button class="preset-btn" onclick="setTask('Write a Python function to reverse a string, test it, and email the code to team@example.com')">🐍 Code + Email</button>
+          <button class="preset-btn" onclick="setTask('Find today\'s weather in Nairobi and recommend what to wear')">🌤️ Weather</button>
+        </div>
+
+        <textarea class="task-input-area" id="taskInput" placeholder="Enter a task for the AI Agent...">Research the top 3 AI companies in Africa and summarize their main products</textarea>
+
+        <button class="run-btn" id="runBtn" onclick="runAgent()">▶ Run Agent</button>
+
+        <div style="margin-top:24px;padding:16px;background:var(--code-bg);color:rgba(255,255,255,0.5);font-size:11px;line-height:1.7;">
+          <div style="color:var(--accent);margin-bottom:6px;">// About this demo</div>
+          This simulates the ReAct (Reason + Act) pattern used by real agents like LangChain, AutoGPT, and Claude's tool-use mode. Each step shows what the agent thinks, what tool it calls, and what it observes back.
+        </div>
+      </div>
+
+      <!-- OUTPUT PANEL -->
+      <div class="demo-panel" style="padding:0;">
+        <div style="padding:16px 20px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);">// Agent Trace (ReAct Loop)</div>
+        <div class="agent-trace" id="agentTrace">
+          <div class="trace-empty">Run a task to watch the agent think...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture explanation -->
+    <div style="background:var(--ink);color:var(--paper);padding:32px 36px;margin-top:2px;">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;">// What's happening under the hood</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;">
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#ffda79;">1. Prompt Engineering</div>
+          <p style="font-size:11px;color:rgba(244,240,232,0.6);">The agent's "brain" is an LLM prompted to output structured Thought/Action/Observation JSON on every step.</p>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#f08060;">2. Tool Registry</div>
+          <p style="font-size:11px;color:rgba(244,240,232,0.6);">Each tool is a function with a name, description, and parameters. The LLM picks which to call. The runtime executes it.</p>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#90b8f8;">3. Memory / Context</div>
+          <p style="font-size:11px;color:rgba(244,240,232,0.6);">Every thought and observation is appended to the context window. The agent always knows its full history.</p>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:#b5e48c;">4. Stopping Condition</div>
+          <p style="font-size:11px;color:rgba(244,240,232,0.6);">Agent stops when it outputs a "Final Answer" action, or when a max-steps limit is hit to prevent infinite loops.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>Claude × AI Agents Explorer — Meaning · Analogy · Demo</footer>
+
+<script>
+// ─── TAB SWITCHING ───────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setTask(text) {
+  document.getElementById('taskInput').value = text;
+}
+
+// ─── AGENT SCENARIOS ─────────────────────────────────
+const scenarios = {
+  default: [
+    { type:'goal', text:'Goal received: Research the top 3 AI companies in Africa and summarize their main products.' },
+    { type:'think', text:'I need to find information about AI companies in Africa. I should use web_search to find credible sources.' },
+    { type:'act', text:'Action: web_search("top AI companies Africa 2024")', tool:'tool-search' },
+    { type:'observe', text:'Observation: Found results — Zindi, Lelapa AI, InstaDeep mentioned across multiple sources.' },
+    { type:'think', text:'Good. I have 3 candidates. Let me search each one individually for product details.' },
+    { type:'act', text:'Action: web_search("InstaDeep AI products Africa")', tool:'tool-search' },
+    { type:'observe', text:'Observation: InstaDeep — deep learning platform, drug discovery tools, real-time ML for telcos.' },
+    { type:'act', text:'Action: web_search("Lelapa AI South Africa products")', tool:'tool-search' },
+    { type:'observe', text:'Observation: Lelapa AI — Vulavula, an NLP API for African languages (Zulu, Sesotho, Xhosa).' },
+    { type:'act', text:'Action: web_search("Zindi Africa platform features")', tool:'tool-search' },
+    { type:'observe', text:'Observation: Zindi — Africa\'s largest data science competition platform. Connects companies with ML talent.' },
+    { type:'think', text:'I now have solid data on all 3. I can write the final summary without more searches.' },
+    { type:'result', text:'✅ Final Answer:\n\n1. InstaDeep (HQ: Tunisia/London) — Enterprise deep learning solutions including AI for logistics and drug discovery.\n\n2. Lelapa AI (HQ: South Africa) — Specializes in NLP for African languages via their Vulavula API.\n\n3. Zindi (HQ: South Africa) — Africa\'s top data science competition platform, bridging talent and industry.', tool:null },
+  ],
+  finance: [
+    { type:'goal', text:'Goal received: Calculate compound interest on $5000 at 8% for 10 years and write a report.' },
+    { type:'think', text:'Two sub-goals: (1) calculate compound interest, (2) write a report. Starting with the calculation.' },
+    { type:'act', text:'Action: calculator("5000 * (1 + 0.08)^10")', tool:'tool-calc' },
+    { type:'observe', text:'Observation: Result = $10,794.62. Growth = $5,794.62 (115.9% gain).' },
+    { type:'think', text:'Calculation done. Now I should also compute year-by-year breakdown for the report.' },
+    { type:'act', text:'Action: run_code("for year in range(1,11): print(year, round(5000*(1.08**year),2))")', tool:'tool-code' },
+    { type:'observe', text:'Observation: Year 1: $5,400 → Year 5: $7,346 → Year 10: $10,794.' },
+    { type:'think', text:'All data ready. Writing the report now.' },
+    { type:'result', text:'✅ Final Answer:\n\nCOMPOUND INTEREST REPORT\nPrincipal: $5,000 | Rate: 8% | Period: 10 years\n\nFinal value: $10,794.62\nTotal interest earned: $5,794.62 (115.9% return)\n\nKey milestones:\n• Year 1: $5,400\n• Year 5: $7,346 (rule of 72: doubles ~every 9 yrs)\n• Year 10: $10,794\n\nConclusion: Compound interest more than doubled the investment.', tool:null },
+  ],
+  code: [
+    { type:'goal', text:'Goal received: Write a Python function to reverse a string, test it, and email the code.' },
+    { type:'think', text:'I need to: write the function, run tests, then email it. Starting with code generation.' },
+    { type:'act', text:'Action: run_code("def reverse_string(s):\\n    return s[::-1]\\nprint(reverse_string(\'hello\'))")', tool:'tool-code' },
+    { type:'observe', text:'Observation: Output: "olleh". Function works.' },
+    { type:'think', text:'Basic test passed. Let me run edge cases — empty string, single char, palindrome.' },
+    { type:'act', text:'Action: run_code("tests = [\'\',\'a\',\'racecar\',\'Hello World\']\\nfor t in tests: print(repr(t), \'→\', repr(reverse_string(t)))")', tool:'tool-code' },
+    { type:'observe', text:'Observation: All edge cases pass. \'\' → \'\', \'a\' → \'a\', \'racecar\' → \'racecar\', \'Hello World\' → \'dlroW olleH\'.' },
+    { type:'think', text:'All tests pass. Now email the code with a summary to team@example.com.' },
+    { type:'act', text:'Action: send_email(to="team@example.com", subject="Python reverse_string function", body="...")', tool:'tool-email' },
+    { type:'observe', text:'Observation: Email sent successfully. Status 200.' },
+    { type:'result', text:'✅ Final Answer:\n\ndef reverse_string(s):\n    return s[::-1]\n\nAll 4 edge case tests passed.\nCode emailed to team@example.com.', tool:null },
+  ],
+  weather: [
+    { type:'goal', text:'Goal: Find today\'s weather in Nairobi and recommend what to wear.' },
+    { type:'think', text:'I\'ll search for current Nairobi weather, then make clothing recommendations based on conditions.' },
+    { type:'act', text:'Action: web_search("Nairobi weather today")', tool:'tool-search' },
+    { type:'observe', text:'Observation: Nairobi — 22°C, partly cloudy, light breeze 12 km/h, humidity 65%, 10% rain chance.' },
+    { type:'think', text:'22°C is mild. Not too hot or cold. No significant rain risk. I have enough to make a recommendation.' },
+    { type:'result', text:'✅ Final Answer:\n\n🌤️ Nairobi Today: 22°C, Partly Cloudy\n\nWhat to wear:\n• Light layers (t-shirt + light jacket or cardigan)\n• Comfortable trousers or jeans\n• Closed shoes (no rain gear needed, but a fold-up umbrella is smart)\n\nIt\'s classic Nairobi "just right" weather. Enjoy your day!', tool:null },
+  ],
+};
+
+// ─── MAIN AGENT RUNNER ───────────────────────────────
+let running = false;
+
+function detectScenario(task) {
+  const t = task.toLowerCase();
+  if (t.includes('compound') || t.includes('interest') || t.includes('finance')) return 'finance';
+  if (t.includes('python') || t.includes('function') || t.includes('code')) return 'code';
+  if (t.includes('weather') || t.includes('nairobi')) return 'weather';
+  return 'default';
+}
+
+async function runAgent() {
+  if (running) return;
+  running = true;
+
+  const task = document.getElementById('taskInput').value.trim() || 'Research AI companies in Africa';
+  const trace = document.getElementById('agentTrace');
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Agent Running...';
+
+  // Reset tools
+  document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('used'));
+  // Reset loop vis
+  document.querySelectorAll('.loop-vis-step').forEach(v => { v.classList.remove('active-step','done-step'); });
+
+  trace.innerHTML = '';
+
+  const steps = scenarios[detectScenario(task)];
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+
+    // Update loop visualizer
+    updateVis(step.type);
+
+    // Highlight tool
+    if (step.tool) {
+      document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('used'));
+      const el = document.getElementById(step.tool);
+      if (el) el.classList.add('used');
+    }
+
+    const div = document.createElement('div');
+    div.className = `trace-step t-${step.type}`;
+    div.innerHTML = buildTraceHTML(step);
+    trace.appendChild(div);
+
+    await sleep(80);
+    div.classList.add('show');
+    trace.scrollTop = trace.scrollHeight;
+
+    const delay = step.type === 'observe' ? 900 : step.type === 'think' ? 1100 : step.type === 'act' ? 700 : step.type === 'result' ? 300 : 600;
+    await sleep(delay);
+  }
+
+  // All done
+  document.querySelectorAll('.loop-vis-step').forEach(v => { v.classList.remove('active-step'); v.classList.add('done-step'); });
+  document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('used'));
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run Agent Again';
+  running = false;
+}
+
+function buildTraceHTML(step) {
+  const labels = { goal:'GOAL', think:'THOUGHT', act:'ACTION', observe:'OBSERVE', result:'FINAL ANS' };
+  const text = step.text.replace(/\n/g, '<br>');
+  return `<div style="margin-bottom:12px;"><span class="t-label">${labels[step.type]}</span>${text}</div>`;
+}
+
+function updateVis(type) {
+  const map = { think:'vis-think', act:'vis-act', observe:'vis-observe', result:'vis-done' };
+  document.querySelectorAll('.loop-vis-step').forEach(v => v.classList.remove('active-step'));
+  if (map[type]) {
+    const el = document.getElementById(map[type]);
+    if (el) el.classList.add('active-step');
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
